@@ -28,6 +28,8 @@ $60 APPROVED, $70 APPROVED, $40 WARNED at $170 / 85%, $50 BLOCKED at $170/$200, 
 
 ## Run it as a service (deployable)
 
+**Live hosted demo: https://web-production-9542d44c.up.railway.app** — try `GET /demo`, `GET /state`, or `POST /pocket` against it.
+
 Percy ships deploy-ready: standard library only, no dependencies to install.
 
 ```bash
