@@ -92,3 +92,20 @@ Copyright 2026 Garrett Whited.
 
 Public repository, Nov 11, 2026. Sandbox only.
 Deadline for the hackathon: Nov 12, 2026, 2:00 PM CT.
+
+## Sponsor Percy
+
+Percy is open source (Apache-2.0) and free to run. If it is useful to
+you, sponsorship helps carry the platform cost behind the public work
+— $70 a month for the build and security tooling — so the work stays
+public.
+
+Sponsorship is support for the open work, not a purchase: it buys no
+license, product, or service, and Percy stays free and unrestricted
+for everyone either way.
+
+**[Sponsor on GitHub](https://github.com/sponsors/Garrettwhited)**
+
+Monthly tiers: $5 Supporter · $10 Backer · $25 Contributor ·
+$35 Builder · $70 Covers the nut (one sponsor carries the whole
+platform month). One-time support is welcome too.
