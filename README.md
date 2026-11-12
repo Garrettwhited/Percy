@@ -42,7 +42,7 @@ Sandbox only — this package has no production path.
 
 1. [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/) → Apps & Credentials → **Sandbox** → Create App named **Percy**. PayPal also creates sandbox buyer and seller test accounts under Sandbox → Accounts.
 2. Put the app's Client ID and Secret in your environment or secret manager only — never in this repo, a screenshot, or a form. Variable names are in `.env.example`: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`.
-3. Run `python3 sandbox_demo.py`. Without credentials it prints BLOCKED and what is missing, and makes no PayPal call. With credentials, the pocket gate decides first, then a sandbox order is created and a sandbox buyer approval link is returned. After the sandbox buyer approves, capture is verified against the gated amount and currency before any receipt is accepted.
+3. Run `python3 sandbox_demo.py`. Without credentials it prints BLOCKED and what is missing, and makes no PayPal call. With credentials, the pocket gate decides first, then a sandbox order is created and a sandbox buyer approval link is returned. Open the link, approve as the sandbox buyer, then run `python3 sandbox_demo.py --capture ORDER_ID` — the capture is verified against the gated amount and currency before any receipt is accepted.
 
 The agent gets read tools only; money moves only through the `pocket` gate.
 
