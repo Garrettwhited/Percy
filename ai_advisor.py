@@ -109,7 +109,7 @@ def gemini_recommend(eligible):
     """
     if os.getenv("ENABLE_AI") != "1" or not os.getenv("GEMINI_API_KEY"):
         raise RuntimeError("AI not configured")
-    model = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    model = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
     payload = {
         "systemInstruction": {
             "parts": [
@@ -162,7 +162,7 @@ def gemini_recommend(eligible):
         },
         method="POST",
     )
-    with urllib.request.urlopen(req, timeout=15) as response:
+    with urllib.request.urlopen(req, timeout=45) as response:
         data = json.load(response)
     text = data["candidates"][0]["content"]["parts"][0]["text"]
     return json.loads(text)["invoice_id"]
@@ -181,7 +181,7 @@ def recommend(candidates, cap, ai_client=None):
     if ai_client is None and os.getenv("ENABLE_AI") == "1":
         if os.getenv("GEMINI_API_KEY"):
             ai_client = gemini_recommend
-            model_label = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+            model_label = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
         elif os.getenv("OPENAI_API_KEY"):
             ai_client = openai_recommend
             model_label = os.getenv("OPENAI_MODEL", "gpt-4o-mini")

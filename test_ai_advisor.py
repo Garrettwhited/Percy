@@ -90,7 +90,7 @@ class TestGeminiAdvisor(unittest.TestCase):
             chosen, receipt = recommend(CANDIDATES, Decimal("200"))
         self.assertEqual(chosen["invoice_id"], "INV-002")
         self.assertEqual(receipt["mode"], "AI_MODEL")
-        self.assertEqual(receipt["model"], "gemini-2.5-flash")
+        self.assertEqual(receipt["model"], "gemini-3.5-flash-lite")
 
     def test_gemini_ineligible_pick_falls_back(self):
         env = {"ENABLE_AI": "1", "GEMINI_API_KEY": "test-key"}
