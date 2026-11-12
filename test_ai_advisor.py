@@ -1,7 +1,10 @@
+import json
+import os
 import unittest
 from decimal import Decimal
+from unittest.mock import patch
 
-from ai_advisor import eligible_candidates, recommend
+from ai_advisor import eligible_candidates, gemini_recommend, recommend
 
 CANDIDATES = [
     {"invoice_id": "INV-001", "purpose": "supplier invoice", "amount": "60.00"},
@@ -48,6 +51,55 @@ class TestAdvisor(unittest.TestCase):
         chosen, receipt = recommend(CANDIDATES, Decimal("10"))
         self.assertIsNone(chosen)
         self.assertEqual(receipt["mode"], "blocked")
+
+
+class _FakeGeminiResponse:
+    def __init__(self, pick_id):
+        self._body = json.dumps(
+            {"candidates": [{"content": {"parts": [
+                {"text": json.dumps({"invoice_id": pick_id})}]}
+            }]}
+        ).encode()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+    def read(self, *args):
+        return self._body
+
+
+class TestGeminiAdvisor(unittest.TestCase):
+    def test_gemini_recommend_parses_pick(self):
+        env = {"ENABLE_AI": "1", "GEMINI_API_KEY": "test-key"}
+        with patch.dict(os.environ, env, clear=False), patch(
+            "urllib.request.urlopen", return_value=_FakeGeminiResponse("INV-002")
+        ):
+            pick = gemini_recommend(
+                eligible_candidates(CANDIDATES, Decimal("200"))
+            )
+        self.assertEqual(pick, "INV-002")
+
+    def test_recommend_uses_gemini_when_key_set(self):
+        env = {"ENABLE_AI": "1", "GEMINI_API_KEY": "test-key"}
+        with patch.dict(os.environ, env, clear=False), patch(
+            "urllib.request.urlopen", return_value=_FakeGeminiResponse("INV-002")
+        ):
+            chosen, receipt = recommend(CANDIDATES, Decimal("200"))
+        self.assertEqual(chosen["invoice_id"], "INV-002")
+        self.assertEqual(receipt["mode"], "AI_MODEL")
+        self.assertEqual(receipt["model"], "gemini-2.5-flash")
+
+    def test_gemini_ineligible_pick_falls_back(self):
+        env = {"ENABLE_AI": "1", "GEMINI_API_KEY": "test-key"}
+        with patch.dict(os.environ, env, clear=False), patch(
+            "urllib.request.urlopen", return_value=_FakeGeminiResponse("INV-003")
+        ):
+            chosen, receipt = recommend(CANDIDATES, Decimal("200"))
+        self.assertEqual(receipt["mode"], "LOCAL_RULE_AGENT")
+        self.assertEqual(chosen["invoice_id"], "INV-001")
 
 
 if __name__ == "__main__":

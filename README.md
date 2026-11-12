@@ -24,7 +24,7 @@ python3 sandbox_demo.py
 
 Demo, fictional owner and invoices, cap $200/week:
 $60 APPROVED, $70 APPROVED, $40 WARNED at $170 / 85%, $50 BLOCKED at $170/$200, owner raises the cap to $250, the blocked invoice then goes through at $220/$250.
-27 tests pass.
+30 tests pass.
 
 ## How it is built
 
@@ -43,7 +43,7 @@ $60 APPROVED, $70 APPROVED, $40 WARNED at $170 / 85%, $50 BLOCKED at $170/$200, 
 Percy's agent proposes; the server disposes.
 
 1. The server builds the eligible list first — only invoices that fit the pocket cap.
-2. The AI advisor recommends one invoice from that list. With `ENABLE_AI=1` and `OPENAI_API_KEY` set (env only), one bounded model call makes the pick and the run reports mode `AI_MODEL`. The model cannot invent an invoice or an amount: any pick outside the eligible list is rejected.
+2. The AI advisor recommends one invoice from that list. With `ENABLE_AI=1` and a provider key set (env only) — `GEMINI_API_KEY` (Google AI Studio) or `OPENAI_API_KEY`; if both are set, Gemini is used — one bounded model call makes the pick and the run reports mode `AI_MODEL` with the model named. The model cannot invent an invoice or an amount: any pick outside the eligible list is rejected.
 3. Without a model configured, a deterministic local rule picks instead and the run reports mode `LOCAL_RULE_AGENT` — no live AI inference is claimed in that mode.
 4. Either way, the pocket gate independently authorizes the chosen invoice before PayPal is touched, and the gate receipt binds the later capture to that exact decision: the capture command refuses any order the receipt does not name, verifies the receipt's amount, and uses a per-order idempotency key.
 

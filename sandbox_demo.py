@@ -3,9 +3,10 @@
 Setup (once): create the sandbox app named Percy in the PayPal
 Developer Dashboard, then put its Client ID and Secret in your
 environment (names in .env.example). Never in this repo or a form.
-For a live AI recommendation also set ENABLE_AI=1 and OPENAI_API_KEY;
-without them the advisor runs its deterministic local rule and says
-so - no live AI inference is claimed in that mode.
+For a live AI recommendation also set ENABLE_AI=1 and a provider key
+- GEMINI_API_KEY (Google AI Studio) or OPENAI_API_KEY; without them
+the advisor runs its deterministic local rule and says so - no live
+AI inference is claimed in that mode.
 
 Command 1 - create:
     python3 sandbox_demo.py
