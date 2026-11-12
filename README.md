@@ -24,7 +24,24 @@ python3 sandbox_demo.py
 
 Demo, fictional owner and invoices, cap $200/week:
 $60 APPROVED, $70 APPROVED, $40 WARNED at $170 / 85%, $50 BLOCKED at $170/$200, owner raises the cap to $250, the blocked invoice then goes through at $220/$250.
-30 tests pass.
+36 tests pass.
+
+## Run it as a service (deployable)
+
+Percy ships deploy-ready: standard library only, no dependencies to install.
+
+```bash
+python3 server.py                 # PORT env, default 8000; PERCY_CAP sets the cap
+# or: docker build -t percy . && docker run -p 8000:8000 percy
+# or: any host that runs the Procfile:  web: python3 server.py
+```
+
+- `GET /` — what the service is. `GET /health` — health check.
+- `GET /demo` — the fictional $200-cap sequence as JSON.
+- `GET /state` — the live pocket: cap, spent, percent used, audit log size.
+- `POST /pocket` — the `pocket` gate as JSON: `{"agent_id", "invoice_id", "purpose", "amount", "board_checkin_id"?}` → the gate decision. A BLOCKED decision means do not execute the payment.
+
+The service holds no PayPal credentials and moves no money. The credentialed sandbox flow stays in `sandbox_demo.py`, run by the owner with credentials in the environment only.
 
 ## How it is built
 
@@ -32,7 +49,8 @@ $60 APPROVED, $70 APPROVED, $40 WARNED at $170 / 85%, $50 BLOCKED at $170/$200, 
 - `pocket.py` — tool call `pocket` (PercyPocket).
 - `red_button.py` — cap engine underneath `pocket`.
 - `demo.py` — the demo above.
-- `test_pocket.py`, `test_red_button.py`, `test_paypal_pocket.py`, `test_ai_advisor.py`, `test_gate_receipt.py` — unit tests.
+- `server.py` — the pocket gate as an HTTP service (see above), with `Dockerfile` and `Procfile` for deployment.
+- `test_pocket.py`, `test_red_button.py`, `test_paypal_pocket.py`, `test_ai_advisor.py`, `test_gate_receipt.py`, `test_server.py` — unit tests.
 - `ai_advisor.py` — the AI advisor (see below).
 - `paypal_pocket.py` — PayPal Sandbox Orders v2 seam: the pocket gate runs first, a blocked spend never calls PayPal, capture is verified against the gated amount.
 - `gate_receipt.py` — binds a capture to the gate decision that authorized it.
