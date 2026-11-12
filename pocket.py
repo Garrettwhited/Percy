@@ -19,9 +19,9 @@ Check-in tie:
 - A check-in reference is a reference only. It is not a payment.
   This file sets no price, no fee, and no default for any of them.
 
-No PayPal API call lives here. Sandbox logic only, standard library
-only, no real money. The PayPal sandbox wiring lands at exactly one
-seam later, from the official PayPal docs, once a sandbox app exists.
+No PayPal API call lives in this file. The PayPal sandbox wiring is
+the one seam beside it: paypal_pocket.py, from the official PayPal
+docs. Sandbox only, standard library only, no real money.
 """
 from __future__ import annotations
 

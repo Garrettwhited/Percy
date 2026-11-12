@@ -19,11 +19,12 @@ An agent does not pay directly. It calls `pocket(...)` first.
 ```bash
 python3 demo.py
 python3 -m unittest discover -s . -p 'test_*.py' -v
+python3 sandbox_demo.py
 ```
 
 Demo, fictional owner and invoices, cap $200/week:
 $60 APPROVED, $70 APPROVED, $40 WARNED at $170 / 85%, $50 BLOCKED at $170/$200, owner raises the cap to $250, the blocked invoice then goes through at $220/$250.
-11 tests pass.
+16 tests pass.
 
 ## How it is built
 
@@ -31,13 +32,23 @@ $60 APPROVED, $70 APPROVED, $40 WARNED at $170 / 85%, $50 BLOCKED at $170/$200, 
 - `pocket.py` — tool call `pocket` (PercyPocket).
 - `red_button.py` — cap engine underneath `pocket`.
 - `demo.py` — the demo above.
-- `test_pocket.py`, `test_red_button.py` — unit tests.
+- `test_pocket.py`, `test_red_button.py`, `test_paypal_pocket.py` — unit tests.
+- `paypal_pocket.py` — PayPal Sandbox Orders v2 seam: the pocket gate runs first, a blocked spend never calls PayPal, capture is verified against the gated amount.
+- `sandbox_demo.py` — ready-check and gated sandbox order create.
 
-No PayPal API call lives in this package yet. The PayPal sandbox wiring lands at exactly one seam later, from the official PayPal docs, once a sandbox app exists. The agent gets read tools only; money moves only through the `pocket` gate.
+## PayPal Sandbox setup
+
+Sandbox only — this package has no production path.
+
+1. [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/) → Apps & Credentials → **Sandbox** → Create App named **Percy**. PayPal also creates sandbox buyer and seller test accounts under Sandbox → Accounts.
+2. Put the app's Client ID and Secret in your environment or secret manager only — never in this repo, a screenshot, or a form. Variable names are in `.env.example`: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`.
+3. Run `python3 sandbox_demo.py`. Without credentials it prints BLOCKED and what is missing, and makes no PayPal call. With credentials, the pocket gate decides first, then a sandbox order is created and a sandbox buyer approval link is returned. After the sandbox buyer approves, capture is verified against the gated amount and currency before any receipt is accepted.
+
+The agent gets read tools only; money moves only through the `pocket` gate.
 
 ## What this is not
 
-- Not a live payment. Sandbox logic only.
+- Not a live payment. Sandbox only; no production path.
 - No customers, revenue, or results claimed.
 - No price or fee set here.
 
