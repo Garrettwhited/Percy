@@ -24,7 +24,7 @@ python3 sandbox_demo.py
 
 Demo, fictional owner and invoices, cap $200/week:
 $60 APPROVED, $70 APPROVED, $40 WARNED at $170 / 85%, $50 BLOCKED at $170/$200, owner raises the cap to $250, the blocked invoice then goes through at $220/$250.
-16 tests pass.
+27 tests pass.
 
 ## How it is built
 
@@ -32,9 +32,20 @@ $60 APPROVED, $70 APPROVED, $40 WARNED at $170 / 85%, $50 BLOCKED at $170/$200, 
 - `pocket.py` — tool call `pocket` (PercyPocket).
 - `red_button.py` — cap engine underneath `pocket`.
 - `demo.py` — the demo above.
-- `test_pocket.py`, `test_red_button.py`, `test_paypal_pocket.py` — unit tests.
+- `test_pocket.py`, `test_red_button.py`, `test_paypal_pocket.py`, `test_ai_advisor.py`, `test_gate_receipt.py` — unit tests.
+- `ai_advisor.py` — the AI advisor (see below).
 - `paypal_pocket.py` — PayPal Sandbox Orders v2 seam: the pocket gate runs first, a blocked spend never calls PayPal, capture is verified against the gated amount.
-- `sandbox_demo.py` — ready-check and gated sandbox order create.
+- `gate_receipt.py` — binds a capture to the gate decision that authorized it.
+- `sandbox_demo.py` — the full flow: advisor → gate → sandbox order → bound capture.
+
+## The AI advisor
+
+Percy's agent proposes; the server disposes.
+
+1. The server builds the eligible list first — only invoices that fit the pocket cap.
+2. The AI advisor recommends one invoice from that list. With `ENABLE_AI=1` and `OPENAI_API_KEY` set (env only), one bounded model call makes the pick and the run reports mode `AI_MODEL`. The model cannot invent an invoice or an amount: any pick outside the eligible list is rejected.
+3. Without a model configured, a deterministic local rule picks instead and the run reports mode `LOCAL_RULE_AGENT` — no live AI inference is claimed in that mode.
+4. Either way, the pocket gate independently authorizes the chosen invoice before PayPal is touched, and the gate receipt binds the later capture to that exact decision: the capture command refuses any order the receipt does not name, verifies the receipt's amount, and uses a per-order idempotency key.
 
 ## PayPal Sandbox setup
 
@@ -42,7 +53,7 @@ Sandbox only — this package has no production path.
 
 1. [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/) → Apps & Credentials → **Sandbox** → Create App named **Percy**. PayPal also creates sandbox buyer and seller test accounts under Sandbox → Accounts.
 2. Put the app's Client ID and Secret in your environment or secret manager only — never in this repo, a screenshot, or a form. Variable names are in `.env.example`: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`.
-3. Run `python3 sandbox_demo.py`. Without credentials it prints BLOCKED and what is missing, and makes no PayPal call. With credentials, the pocket gate decides first, then a sandbox order is created and a sandbox buyer approval link is returned. Open the link, approve as the sandbox buyer, then run `python3 sandbox_demo.py --capture ORDER_ID` — the capture is verified against the gated amount and currency before any receipt is accepted.
+3. Run `python3 sandbox_demo.py`. Without credentials it prints BLOCKED and what is missing, and makes no PayPal call. With credentials, the pocket gate decides first, then a sandbox order is created and a sandbox buyer approval link is returned. Open the link, approve as the sandbox buyer, then run `python3 sandbox_demo.py --capture ORDER_ID` — the capture is checked against the gate receipt written at create time (same order, same amount, same currency) before any receipt is accepted.
 
 The agent gets read tools only; money moves only through the `pocket` gate.
 
